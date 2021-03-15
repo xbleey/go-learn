@@ -3,19 +3,32 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 )
 
 func main() {
+	gin.DisableConsoleColor()
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 	r := gin.Default()
-	result, err := ReadAll("index.html")
+
+	index, err := ReadAll("index.html")
+	favicon, err := ReadAll("favicon.ico")
 	checkError(err)
+
 	r.GET("/", func(c *gin.Context) {
 		c.Writer.WriteHeader(200)
-		c.Writer.Write(result)
+		c.Writer.Write(index)
 	})
+
+	r.GET("/favicon.ico", func(c *gin.Context) {
+		c.Writer.WriteHeader(200)
+		c.Writer.Write(favicon)
+	})
+
 	r.GET("/user/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		c.String(http.StatusOK, "Hello %s", name)
